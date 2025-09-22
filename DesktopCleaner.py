@@ -1,4 +1,4 @@
-# Tasks to be implemented:
+﻿# Tasks to be implemented:
 # 1. List all files in a directory using scandir()
 # 2. Get the size of a file
 # 3. Get the last modified time of a file
@@ -7,7 +7,6 @@
 # 6. Delete empty folders
 # 7. Handle exceptions and errors gracefully
 # 8. Log actions taken (e.g., files moved, folders created, errors encountered)
-
 
 import os
 from datetime import datetime
@@ -29,32 +28,31 @@ def plugin_files(basepath):
                 print(f'File: {entry.name}, Size: {entry.stat().st_size} bytes, Last Modified: {convert_date(entry.stat().st_mtime)}')
             elif entry.is_dir():
                 print(f'Directory: {entry.name}')
-plugin_files(basepath)
 
 # Function to create folders for each plugin
-def create_plugin_folders(basepath, plugins_files):
-    for plugin in plugins_files:
-        if plugin.is_file():
-            folder_path = os.path.join(basepath, f'{plugin.name} folder')
-            if not os.path.exists(folder_path):
-                os.mkdir(folder_path)
-                print(f'Created folder: {folder_path}')
-            else:
-                print(f'Folder already exists: {folder_path}')
-create_plugin_folders(basepath, os.scandir(basepath))
+def create_plugin_folders(basepath):
+    with os.scandir(basepath) as entries:
+        for plugin in entries:
+            if plugin.is_file():
+                folder_path = os.path.join(basepath, f'{plugin.name} folder')
+                if not os.path.exists(folder_path):
+                    os.mkdir(folder_path)
+                    print(f'Created folder: {folder_path}')
+                else:
+                    print(f'Folder already exists: {folder_path}')
 
 # Function to move files into their respective folders based on plugin names
-def move_files_to_folders(basepath, plugins_files):
-    for plugin in plugins_files:
-        if plugin.is_file():
-            folder_path = os.path.join(basepath, f'{plugin.name} folder')
-            if os.path.exists(folder_path):
-                new_path = os.path.join(folder_path, plugin.name)
-                os.rename(plugin.path, new_path)
-                print(f'Moved file: {plugin.name} to {folder_path}')
-            else:
-                print(f'Folder does not exist for plugin: {plugin.name}')
-move_files_to_folders(basepath, os.scandir(basepath))
+def move_files_to_folders(basepath):
+    with os.scandir(basepath) as entries:
+        for plugin in entries:
+            if plugin.is_file():
+                folder_path = os.path.join(basepath, f'{plugin.name} folder')
+                if os.path.exists(folder_path):
+                    new_path = os.path.join(folder_path, plugin.name)
+                    os.rename(plugin.path, new_path)
+                    print(f'Moved file: {plugin.name} to {folder_path}')
+                else:
+                    print(f'Folder does not exist for plugin: {plugin.name}')
 
 # Function to delete empty folders
 def delete_empty_folders(basepath):
@@ -70,4 +68,15 @@ def delete_empty_folders(basepath):
                         print(f'Skipped deletion of folder: {entry.name}')
                 else:
                     print(f'Folder not empty, not deleted: {entry.name}')
-delete_empty_folders(basepath)
+
+# Main execution
+if __name__ == "__main__":
+    print("Starting desktop cleanup process...")
+    plugin_files(basepath)
+    print("\nCreating folders...")
+    create_plugin_folders(basepath)
+    print("\nMoving files...")
+    move_files_to_folders(basepath)
+    print("\nCleaning up empty folders...")
+    delete_empty_folders(basepath)
+    print("Desktop cleanup completed!")
